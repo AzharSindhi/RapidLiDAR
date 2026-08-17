@@ -90,6 +90,24 @@ python train_refine.py --config_path configs/rapidlidar_refine.yaml \
     --base_model_checkpoint ckpt_path
 ```
 
+## Checkpoints
+
+| Model | Checkpoint |
+|---|---|
+| RapidLiDAR (coarse) | [download](https://drive.google.com/file/d/1GaJFQAN7beHT5KQH9q07A8pPWZErgWA1/view?usp=sharing) |
+<!-- | Refinement Network | [TODO: add link] | -->
+
+## Evaluation
+
+Run the completion pipeline on the full SemanticKITTI validation sequence (`08`):
+
+```bash
+python tools/completion_pipeline.py -c checkpoints/rapidlidar_vox_0.3_best.pth -p /path/to/sequence/08
+```
+
+- `-c`/`--coarse_ckpt`: path to the coarse RapidLiDAR checkpoint.
+- `-p`/`--path_scan`: KITTI sequence directory containing `velodyne`, `poses.txt`, `calib.txt`, and `map_clean.npy`.
+
 ## Citation
 
 If you find this work useful, please consider citing:
@@ -101,32 +119,6 @@ If you find this work useful, please consider citing:
   booktitle={European Conference on Computer Vision},
   year={2026}
 }
-```
-
-## Checkpoints
-
-| Model | Checkpoint |
-|---|---|
-| RapidLiDAR (coarse) | [download](https://drive.google.com/file/d/1GaJFQAN7beHT5KQH9q07A8pPWZErgWA1/view?usp=sharing) |
-<!-- | Refinement Network | [TODO: add link] | -->
-
-## Repository layout
-
-```
-rapidlidar/
-  models/
-    feature_extraction.py   Sec. 3.1 Multi-Scale Feature Extraction (voxel encoder + BEV head)
-    adaptive_init.py         Sec. 3.2 Adaptive Initialization Module
-    reconstruction.py        Sec. 3.3 Multi-Scale Reconstruction Module
-    refinement.py            Refinement Network (second training stage)
-    rapidlidar.py             RapidLiDAR LightningModule composing the above
-    backbones/voxel_unet3d.py 3D convolutional voxel backbone
-  data/                      Dataset + point cloud augmentations
-  losses/chamfer.py          Chamfer distance losses
-configs/                     Data configuration YAMLs
-tools/generate_gtinput_nomink.py Generates gt/input training pairs from raw SemanticKITTI scans
-tools/completion_pipeline.py Inference/evaluation pipeline for trained checkpoints
-train.py / train_refine.py   CLI entrypoints
 ```
 
 ## Acknowledgments
