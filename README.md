@@ -123,7 +123,6 @@ rapidlidar/
     backbones/voxel_unet3d.py 3D convolutional voxel backbone
   data/                      Dataset + point cloud augmentations
   losses/chamfer.py          Chamfer distance losses
-  utils/checkpoint_compat.py Legacy checkpoint migration utilities
 configs/                     Data configuration YAMLs
 tools/generate_gtinput_nomink.py Generates gt/input training pairs from raw SemanticKITTI scans
 tools/completion_pipeline.py Inference/evaluation pipeline for trained checkpoints
