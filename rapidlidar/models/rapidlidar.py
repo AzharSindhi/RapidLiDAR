@@ -7,12 +7,23 @@ from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
 from rapidlidar.data.dataset import SemanticKITTI
-from rapidlidar.losses.chamfer import sqrt_chamfer_distance
 from rapidlidar.models.adaptive_init import AdaptiveInitializationModule
 from rapidlidar.models.feature_extraction import FeatureExtractionModule
 from rapidlidar.models.reconstruction import MultiScaleReconstructionModule
 
 pl.seed_everything(42)
+
+# Imported lazily so inference (and `from_pretrained`) don't require the Chamfer
+# CUDA extension, which is only needed for the training/eval loss.
+sqrt_chamfer_distance = None
+
+
+def get_chamfer_distance():
+    global sqrt_chamfer_distance
+    if sqrt_chamfer_distance is None:
+        from rapidlidar.losses.chamfer import sqrt_chamfer_distance as _cd
+        sqrt_chamfer_distance = _cd
+    return sqrt_chamfer_distance
 
 
 class RapidLiDAROutput(NamedTuple):
@@ -30,24 +41,32 @@ class RapidLiDAR(pl.LightningModule):
                  predict_residual=True,
                  init_noise_std=0.1,
                  displacement_scale=50.0,
-                 voxel_size=0.3):
+                 voxel_size=0.3,
+                 x_range=None, y_range=None, z_range=None, num_points=None):
         super().__init__()
         self.save_hyperparameters()
 
         self.config_path = config_path
-        with open(config_path, "r") as f:
-            import yaml
-            cfg = yaml.safe_load(f)["data"]
+        # Data ranges can be passed explicitly (so `from_pretrained` works without
+        # the config file on disk); otherwise they are read from `config_path`.
+        if None in (x_range, y_range, z_range, num_points):
+            with open(config_path, "r") as f:
+                import yaml
+                cfg = yaml.safe_load(f)["data"]
+            x_range = cfg["x_range"] if x_range is None else x_range
+            y_range = cfg["y_range"] if y_range is None else y_range
+            z_range = cfg["z_range"] if z_range is None else z_range
+            num_points = cfg["num_points"] if num_points is None else num_points
 
         self.num_workers = 4
         self.predict_residual = predict_residual
         self.init_noise_std = init_noise_std
         self.displacement_scale = displacement_scale
 
-        self.num_points = cfg["num_points"]
-        self.x_range = cfg["x_range"]
-        self.y_range = cfg["y_range"]
-        self.z_range = cfg["z_range"]
+        self.num_points = num_points
+        self.x_range = x_range
+        self.y_range = y_range
+        self.z_range = z_range
         self.learning_rate = learning_rate
         self.batch_size = batch_size
 
@@ -120,7 +139,7 @@ class RapidLiDAR(pl.LightningModule):
 
         output = self(p_part)
         points = output.points
-        loss = sqrt_chamfer_distance(points, p_full)
+        loss = get_chamfer_distance()(points, p_full)
 
         if batch_idx == 0:
             self._log_point_clouds({
@@ -137,7 +156,7 @@ class RapidLiDAR(pl.LightningModule):
         batch_size = p_full.shape[0]
 
         output = self(p_part)
-        cd = sqrt_chamfer_distance(output.points, p_full)
+        cd = get_chamfer_distance()(output.points, p_full)
         self.log("val_cd", cd, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True, batch_size=batch_size)
 
         if batch_idx == 0:
@@ -152,7 +171,7 @@ class RapidLiDAR(pl.LightningModule):
         p_full, p_part = batch
         batch_size = p_full.shape[0]
         output = self(p_part)
-        cd = sqrt_chamfer_distance(output.points, p_full)
+        cd = get_chamfer_distance()(output.points, p_full)
         self.log("test_cd", cd, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True, batch_size=batch_size)
         return cd
 

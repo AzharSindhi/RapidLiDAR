@@ -1,6 +1,6 @@
 # RapidLiDAR
 
-<!-- [![arXiv](https://img.shields.io/badge/arXiv-2501.03793-b31b1b.svg)](https://arxiv.org/abs/XXX) -->
+[![arXiv](https://img.shields.io/badge/arXiv-2608.16490-b31b1b.svg)](http://arxiv.org/abs/2608.16490)
 
 Single-pass LiDAR scene completion. Given a partial point cloud `X`, RapidLiDAR predicts the
 completed scene `P` end-to-end in a single forward pass, combining:
@@ -96,6 +96,24 @@ python train_refine.py --config_path configs/rapidlidar_refine.yaml \
 |---|---|
 | RapidLiDAR (coarse) | [download](https://drive.google.com/file/d/1GaJFQAN7beHT5KQH9q07A8pPWZErgWA1/view?usp=sharing) |
 <!-- | Refinement Network | [TODO: add link] | -->
+
+## HuggingFace demo
+
+The model is also hosted on the
+[Hugging Face Hub](https://huggingface.co/Azhar88/RapidLiDAR-coarse). After
+installing this package (see [Installation](#installation), including the mmcv
+deformable-attention op), load it with a single `from_pretrained` call:
+
+```python
+from rapidlidar.models.hub import RapidLiDARHubModel
+
+model = RapidLiDARHubModel.from_pretrained("Azhar88/RapidLiDAR-coarse")
+model.eval()
+
+# x_partial: (B, N, 3) partial point cloud
+output = model(x_partial, up_factor=10)
+completed_points = output.points  # (B, N * up_factor, 3)
+```
 
 ## Evaluation
 

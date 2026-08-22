@@ -9,5 +9,8 @@ setup(
         'torch',
         'numpy',
         'tqdm',
+        'pyyaml',
+        'huggingface_hub',
+        'pytorch-lightning',
     ],
 )
