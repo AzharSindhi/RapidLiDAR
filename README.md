@@ -97,7 +97,7 @@ python train_refine.py --config_path configs/rapidlidar_refine.yaml \
 | RapidLiDAR (coarse) | [download](https://drive.google.com/file/d/1GaJFQAN7beHT5KQH9q07A8pPWZErgWA1/view?usp=sharing) |
 <!-- | Refinement Network | [TODO: add link] | -->
 
-## HuggingFace demo
+## HuggingFace Inference
 
 The model is also hosted on the
 [Hugging Face Hub](https://huggingface.co/Azhar88/RapidLiDAR-coarse). After
