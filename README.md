@@ -2,17 +2,6 @@
 
 [![arXiv](https://img.shields.io/badge/arXiv-2608.16490-b31b1b.svg)](http://arxiv.org/abs/2608.16490)
 
-Single-pass LiDAR scene completion. Given a partial point cloud `X`, RapidLiDAR predicts the
-completed scene `P` end-to-end in a single forward pass, combining:
-
-- **Multi-Scale Feature Extraction** — voxelizes `X` and extracts multi-scale 3D voxel features
-  and a dense 2D BEV feature map via a dedicated BEV head with self-attention.
-- **Adaptive Initialization Module** — predicts a spatially varying displacement for an expanded
-  version of `X` to obtain a coarse initialized scene.
-- **Multi-Scale Reconstruction Module** — refines the initialized scene using multi-scale
-  deformable attention between per-point features and multi-scale BEV feature maps.
-- **Refinement Network** — an optional second-stage network trained on top of the frozen
-  completion model that upsamples the scene by a factor of `kappa`.
 
 ## Installation
 
